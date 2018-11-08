@@ -1,22 +1,30 @@
 # Coveo Push API SDK for Python
 
-The Coveo Push API SDK for Python is meant to help you use the [Coveo Push API](https://docs.coveo.com/en/68/cloud-v2-developers/push-api) using Python.
+The Coveo Push API SDK for Python is meant to help you use the [Coveo Push API](https://docs.coveo.com/en/68/cloud-v2-developers/push-api) when coding in Python.
 
-The SDK makes it easier to communicate with the Coveo Push API when using Python.
+This SDK includes the following features:
 
 - Document validation before they are pushed to the plaform
-- Update source status before and after a document update
-- Large files are automatically pushed to the platform through an Amazon S3 container
+- Source update status before and after a document update
+- Automatic push of large files to the platform through an Amazon S3 container
 
 For code examples on how to use the SDK, see the `examples` section.
 
 ## Installation
-Make sure you have installed [git](https://git-scm.com/downloads).
 
-Then, enter the following command in your command prompt.
+Make sure you have [git](https://git-scm.com/downloads) installed.
+
+Then, in your command prompt, enter the following command:
 
 ```
 pip install git+https://github.com/coveo-labs/SDK-Push-Python
+```
+
+This SDK depends on the [Python Requests](http://docs.python-requests.org/en/master/user/install/#install) and [JSONPickle](https://jsonpickle.github.io/#download-install) libraries. If you do not already have them, you need to run the following commands:
+
+```
+pip install requests
+pip install jsonpickle
 ```
 
 ## Including the SDK in Your Code
@@ -36,17 +44,17 @@ Before pushing a document to a Coveo Cloud organization, you need to ensure that
 
 Once you have those prerequisites, you need to get your Organization Id, Source Id, and API Key. For more information on how to do that, see [Push API Tutorial 1 - Managing Shared Content](https://docs.coveo.com/en/92/cloud-v2-developers/push-api-tutorial-1---managing-shared-content).
 
+You must also create fields and mappings for each metadata you will be sending with your documents. Otherwise, some of the data you push might get ignored by Coveo Cloud. To learn how to create fields and mappings in Coveo Cloud, see [Add/Edit a Field: [FieldName] - Panel](https://docs.coveo.com/en/1982/cloud-v2-administrators/add-edit-a-field-fieldname---panel) and [Edit the Mappings of a Source: [SourceName]](https://docs.coveo.com/en/1640/cloud-v2-administrators/edit-the-mappings-of-a-source-sourcename).
+
 ## Pushing Documents
 
-The Coveo Push API supports two methods for pushing data: single calls and batch calls. Almost all of the time, you are encouraged to use batch calls over single calls. Using single calls is usually recommended only when adding or updating a single document.
+The Coveo Push API supports two methods for pushing data: sending a single document, or sending batches of documents.
 
-This SDK offers two methods of pushing documents: pushing a single document, or pushing a batch of document.
-
-For most use cases, the third approach is the recommended approach.
+Unless you are only sending one document, you should always be sending your documents in batches.
 
 ### Pushing a Single Document
 
-You should only use this method when you want to add or update a single document. Pushing several documents using this method may lead to the `429 - Too Many Requests` response from the Coveo Platform.
+You should only use this method when you want to add or update a single document. Pushing several documents using this method may lead to the `429 - Too Many Requests` response from the Coveo platform.
 
 Before pushing your document, you should specify the Source Id, Organization Id, and Api Key to use.
 
@@ -57,25 +65,24 @@ push = CoveoPush.Push(sourceId, orgId, apiKey)
 You can then create a document with the appropriate options, as such:
 
 ```python
-# Create a document. The paramater passed is its URI.
+# Create a document. The paramater passed is its URI. This is mandatory.
 mydoc = Document('https://myreference&id=TESTME')
 # Set the Title of the document
 mydoc.Title = "THIS IS A TEST"
-# Set plain text data to your document.
+# Set plain text data to your document. This is used for searchability, as well as to generate excerpts and summaries for your document.
 mydoc.SetData( "ALL OF THESE WORDS ARE SEARCHABLE")
-# Set the file extension of your document
+# Set the file extension of your document. While not mandatory, this option allows Coveo to better analyze your documents.
 mydoc.FileExtension = ".html"
 # Add metadata to your document. The first option is the field name, while the second is its value.
 mydoc.AddMetadata("connectortype", "CSV")
 authors = []
 authors.append("Coveo")
 authors.append("R&D")
-# rssauthors is a MultiFacet field
+# This code assumes that you have a `rssauthors` field set as a multi-value facet in Coveo Cloud.
 mydoc.AddMetadata("rssauthors", authors)
 ```
 
-The above will create a document with a documentid of `https://myreference&id=TESTME`. It will set its document text to the value for `SetData`, and add its appropriate metadata.
-some metadata and other properties like `FileExtension` and `Title`.
+The above will create a document with the `https://myreference&id=TESTME` URI. It will then set its document text to the value for `SetData`, and add its appropriate metadata.
 
 Once the document is ready, you can push it to your index with the following line:
 
@@ -83,16 +90,25 @@ Once the document is ready, you can push it to your index with the following lin
 push.AddSingleDocument(mydoc)
 ```
 
-Example:
+A full example would look like this:
 
 ```python
+from coveopush import CoveoPush
+from coveopush import Document
+from coveopush import CoveoPermissions
+from coveopush import CoveoConstants
+
+sourceId = 'Your Source Id'
+orgId = 'Your Org Id'
+apiKey = 'Your API Key'
+
 push = CoveoPush.Push(sourceId, orgId, apiKey)
-mydoc = CoveoDocument("https://myreference&id=TESTME")
+mydoc = Document("https://myreference&id=TESTME")
 mydoc.Title = "THIS IS A TEST"
 mydoc.SetData("ALL OF THESE WORDS ARE SEARCHABLE")
 mydoc.FileExtension = ".html"
 mydoc.AddMetadata("connectortype", "CSV")
-user_email = "wim@coveo.com"
+user_email = "user@coveo.com"
 my_permissions = CoveoPermissions.PermissionIdentity(CoveoConstants.Constants.PermissionIdentityType.User, "", user_email)
 allowAnonymous = True
 mydoc.SetAllowedAndDeniedPermissions([my_permissions], [], allowAnonymous)
@@ -101,7 +117,7 @@ push.AddSingleDocument(mydoc)
 
 ### Pushing Batches of Documents
 
-You should use this method when you want to push several documents at the same time to the platform.
+This SDK offers a convenient way to send batches of documents to the Coveo Cloud platform. Using this method, you ensure that your documents do not get throttled when being sent to Coveo Cloud.
 
 As with the previous call, you must first specify your Source Id, Organization Id, and API Key.
 
@@ -109,7 +125,7 @@ As with the previous call, you must first specify your Source Id, Organization I
 push = CoveoPush.Push(sourceId, orgId, apiKey)
 ```
 
-You must then start the batch operation, as well as set the maximum size for each batch. If you do not set a maximum size for your request, it will default to 256 Mb.
+You must then start the batch operation, as well as set the maximum size for each batch. If you do not set a maximum size for your request, it will default to 256 Mb. The size is set in bytes.
 
 ```python
 push.Start(updateSourceStatus, deleteOlder)
@@ -123,12 +139,13 @@ You can then start adding documents to your source, using the `Add` command, as 
 ```python
 push.Add(createDoc('testfiles\\Large1.pptx','1'))
 ```
+For the sake of simplicity, a `createDoc` function is assumed to exist. This function returns documents formatted the same way the `mydoc` element was formatted in the single document example.
 
-This command checks if the total size of the documents for the current batch does not exceed the maximum size. When it does, it will initiate a file upload to Amazon S3, and then push this data to Coveo Cloud through the Push API.
+The `Add` command checks if the total size of the documents for the current batch does not exceed the maximum size. When it does, it initiates a file upload to Amazon S3, and then pushes this data to Coveo Cloud through the Push API.
 
-Finally, once you are done adding your documents, you should always end the stream. This way, the remaining documents will be pushed to the platform, the source status of your Push source will be set back to `Idle`, and old documents will be removed from your source.
+Finally, once you are done adding your documents, you should always end the batch operation. This way, the remaining documents will be pushed to the platform, the source status of your Push source will be set back to `Idle`, and old documents will be removed from your source.
 
-Example:
+The following example demonstrates how to do that.
 
 ```python
 push = CoveoPush.Push(sourceId, orgId, apiKey)
@@ -147,9 +164,9 @@ push.Add(createDoc('testfiles\\Large5.pptx','2'))
 push.End(updateSourceStatus, deleteOlder)
 ```
 
-## Adding Securities and Permissions to Your Documents
+## Adding Securities to Your Documents
 
-In many circumstances, you may also want to add securities and permissions to the documents you are pushing. This SDK allows ou to add security provider information with your documents while pushing them. To learn how to format your permissions, see [Push API Tutorial 2 - Managing Secured Content](https://docs.coveo.com/en/98/cloud-v2-developers/push-api-tutorial-2---managing-secured-content).
+In Coveo, you can add securities to documents, so only allowed users or groups can view the document. This SDK allows you to add security provider information with your documents while pushing them. To learn how to format your permissions, see [Push API Tutorial 2 - Managing Secured Content](https://docs.coveo.com/en/98/cloud-v2-developers/push-api-tutorial-2---managing-secured-content).
 
 You should first define your security provider, as such:
 
@@ -169,11 +186,11 @@ cascading = {
 push.AddSecurityProvider(mysecprovidername, "EXPANDED", cascading)
 ```
 
-The `AddSecurityProvider` will automatically associate your current source with the newly created security provider.
+The `AddSecurityProvider` command automatically associates your current source with the newly created security provider.
 
 Once the security provider is created, you can use it to set permissions on your documents.
 
-This example is for a simple permission set:
+The folling example adds a simple permission set:
 
 ```python
 # Set permissions, based on an email address
@@ -187,18 +204,11 @@ allowAnonymous = False
 my_document.SetAllowedAndDeniedPermissions([my_permission], [], allowAnonymous)
 ```
 
-This example incorporates more complex permission sets to your document, in which users can have access to a document either because they are given access individually, or they belong to a group who has access to the document. This example also includes user who are specifically denied access to the document.
+The following example incorporates more complex permission sets to your document, in which users can have access to a document either because they are given access individually, or because they belong to a group who has access to the document. This example also includes users who are specifically denied access to the document.
 
-Finally, this example includes two permissions levels, the first one based on the individuals, while the second is based on groups. The first permission level has precedence over the second permission level; a user allowed access to a document in the first permission level but denied in the second level will still have access to the document. However, users that are specifically denied access will still not be able to access the document.
+Finally, this example includes two permissions levels. The first permission level has precedence over the second permission level; a user allowed access to a document in the first permission level but denied in the second level will still have access to the document. However, users that are specifically denied access will still not be able to access the document.
 
 ```python
-# Set permissions
-# Specific Users have permissions (in permLevel1/permLevel1Set) OR if you are in the group (permLevel2/permLevel2Set)
-# This means: Two PermissionLevels
-# Higher Permission Levels means priority
-# So if you are allowed in Permission Level 1 and denied in Permission Level 2 you will still have access
-# Denied users will always filtered out
-
 # Define a list of users that should have access to the document.
 users = []
 users.append("wim")
@@ -240,7 +250,7 @@ for group in groups:
  # Create the permission identity
   permLevel2Set.AddAllowedPermission(CoveoPermissions.PermissionIdentity(CoveoConstants.Constants.PermissionIdentityType.Group, mysecprovidername, group))
 
-# Set the permission sets to the levels
+# Set the permission sets to the appropriate level
 permLevel1.AddPermissionSet(permLevel1Set1)
 permLevel1.AddPermissionSet(permLevel1Set2)
 permLevel2.AddPermissionSet(permLevel2Set)
@@ -250,9 +260,9 @@ my_document.Permissions.append(permLevel1)
 my_document.Permissions.append(permLevel2)
 ```
 
-Permissions are created using permission levels, which can hold multiple PermissionSets (see [Complex Permission Model Definition Example](https://docs.coveo.com/en/25/cloud-v2-developers/complex-permission-model-definition-example)).
+Securities are created using permission levels, which can hold multiple PermissionSets (see [Complex Permission Model Definition Example](https://docs.coveo.com/en/25/cloud-v2-developers/complex-permission-model-definition-example)).
 
-Setting permissions with a custom security provider also requires that you inform the index which members and user mappings are available. You would normally do that after the indexing process is complete.
+Setting securities with a custom security provider also requires that you inform the index of which members and user mappings are available. You would normally do that after the indexing process is complete.
 
 ## Adding Security Expansion
 
@@ -296,14 +306,15 @@ push.EndExpansion(mysecprovidername)
 
 This way, you ensure that the remaining identities are properly sent to the Coveo Platform.
 
-After the next Security Permission Update cycle, the securities will be updated (see [Refresh a Security Identity Provider](https://docs.coveo.com/en/1905/cloud-v2-administrators/security-identities---page#refresh-a-security-identity-provider)).
+After the next Security Permission update cycle, the securities will be updated (see [Refresh a Security Identity Provider](https://docs.coveo.com/en/1905/cloud-v2-administrators/security-identities---page#refresh-a-security-identity-provider)).
 
 ### Dependencies
-* [Python 3.x](https://www.python.org/downloads/)
-* [Python Requests library]
+- [Python 3.x](https://www.python.org/downloads/)
+- [Python Requests](http://docs.python-requests.org/en/master/user/install/#install)
+- [JSONPickle](https://jsonpickle.github.io/#download-install)
 
 ### References
-* [Coveo Push API](https://docs.coveo.com/en/68/cloud-v2-developers/push-api)
+- [Coveo Push API](https://docs.coveo.com/en/68/cloud-v2-developers/push-api)
 
 ### Authors
 - [Wim Nijmeijer](https://github.com/wnijmeijer)
