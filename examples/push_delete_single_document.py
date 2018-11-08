@@ -23,37 +23,37 @@ from coveopush import CoveoConstants
 
 
 def main():
-    sourceId = 'xkny6nnnc5il65t2bz44xokl2q-sewimnijmeijer01'
-    orgId = 'sewimnijmeijer01'
-    apiKey = 'xx2179fe3e-6efc-4817-916e-d83de72e25f0'
+    sourceId = '--Enter your source id--'
+    orgId = '--Enter your org id--'
+    apiKey = '--Enter your API key--'
 
-    #Setup the push client
-    push = CoveoPush.Push( sourceId, orgId, apiKey)
+    # Setup the push client
+    push = CoveoPush.Push(sourceId, orgId, apiKey)
 
-    #First add the document
-    mydoc = Document('https://myreference&id=TESTME')
-    #Set plain text
-    mydoc.SetData( "ALL OF THESE WORDS ARE SEARCHABLE")
-    #Set FileExtension
+    # First add the document
+    mydoc = Document("https://myreference&id=TESTME")
+    # Set plain text
+    mydoc.SetData("ALL OF THESE WORDS ARE SEARCHABLE")
+    # Set FileExtension
     mydoc.FileExtension = ".html"
-    #Add Metadata
+    # Add Metadata
     mydoc.AddMetadata("connectortype", "CSV")
-    #Set the Title
+    # Set the title
     mydoc.Title = "THIS IS A TEST"
-    #Set permissions
+    # Set permissions
     user_email = "wim@coveo.com"
-    #Create a permission Identity
-    myperm = CoveoPermissions.PermissionIdentity( CoveoConstants.Constants.PermissionIdentityType.User, "", user_email )
-    #Set the permissions on the document
+    # Create a permission identity
+    myperm = CoveoPermissions.PermissionIdentity(CoveoConstants.Constants.PermissionIdentityType.User, "", user_email)
+    # Set the permissions on the document
     allowAnonymous = True
     mydoc.SetAllowedAndDeniedPermissions([myperm], [], allowAnonymous)
 
-    #Push the document
+    # Push the document
     push.AddSingleDocument(mydoc)
 
     time.sleep(100)
 
-    #Remove it
+    # Remove it
     push.RemoveSingleDocument('https://myreference&id=TESTME')
     
 if __name__ == '__main__':
