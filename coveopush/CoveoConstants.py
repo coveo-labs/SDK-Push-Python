@@ -116,12 +116,12 @@ class Constants:
   #---------------------------------------------------------------------------------
   class ErrorCodes:
     Codes = {}
-    Codes["429"] = "To many requests, slow down your pushes! Are you using Batch Calls?"
-    Codes["413"] = "Request to Large, you single document/batch document is simply to large!"
-    Codes["412"] = "Invalid or missing parameter, invalid source id"
-    Codes["403"] = "Access Denied, validate if your API Key has the proper access and that your Org and Source Id are properly specified"
-    Codes["401"] = "Unauthorized or invalid token, check your API key"
-    Codes["400"] = "Organization is Paused, reactivate it OR Invalid JSON"
+    Codes["429"] = "Too many requests. Slow down your pushes! Are you using Batch Calls?"
+    Codes["413"] = "Request too large. The document is too large to be processed. It should be under 5 mb."
+    Codes["412"] = "Invalid or missing parameter - invalid source id"
+    Codes["403"] = "Access Denied. Validate that your API Key has the proper access and that your Org and Source Id are properly specified"
+    Codes["401"] = "Unauthorized or invalid token. Ensure your API key has the appropriate permissions."
+    Codes["400"] = "Organization is Paused. Reactivate it OR Invalid JSON"
     Codes["504"] = "Timeout"
 
   #---------------------------------------------------------------------------------
