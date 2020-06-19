@@ -7,6 +7,10 @@ setup(
     author='Wim Nijmeijer',
     author_email='wnijmeijer@coveo.com',
     packages=['coveopush'],
+    install_requires=[
+        'requests',
+        'jsonpickle'
+    ],
     version='0.2',
     description='CoveoPush client',
 )

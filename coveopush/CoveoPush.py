@@ -794,12 +794,11 @@ class Push:
             self.UpdateSourceStatus(Constants.SourceStatusType.Idle)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def Start(self, p_UpdateStatus: bool = True, p_DeleteOlder: bool = False):
+    def Start(self, p_UpdateStatus: bool = True):
         """
         Start.
         Starts a batch Push call, will set the start ordering Id and will update the status of the source
         :arg p_UpdateStatus: bool (True), if the source status should be updated
-        :arg p_DeleteOlder: bool (False), if older documents should be removed from the index after the new push
         """
 
         self.logger.debug('Start')
