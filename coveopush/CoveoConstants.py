@@ -110,9 +110,9 @@ class Constants:
     # ---------------------------------------------------------------------------------
     class PushApiEndpoint:
         PROD_PUSH_API_URL = "https://api.cloud.coveo.com/push/v1"
-        HIPAA_PUSH_API_URL = "https://api-hipaa.cloud.coveo.com/push/v1"
-        QA_PUSH_API_URL = "https://api-qa.cloud.coveo.com/push/v1"
-        DEV_PUSH_API_URL = "https://api-dev.cloud.coveo.com/push/v1"
+        HIPAA_PUSH_API_URL = "https://apihipaa.cloud.coveo.com/push/v1"
+        QA_PUSH_API_URL = "https://apiqa.cloud.coveo.com/push/v1"
+        DEV_PUSH_API_URL = "https://apidev.cloud.coveo.com/push/v1"
 
     # ---------------------------------------------------------------------------------
     class PushApiPaths:
